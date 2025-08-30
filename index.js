@@ -46,10 +46,17 @@ const User = mongoose.model("User", userSchema);
 const Exercise = mongoose.model("Exercise", exerciseSchema);
 
 // **Rota 1: Criar um novo usuário**
+// Rota 1: Criar um novo usuário
 app.post("/api/users", async (req, res) => {
   console.log("POST /api/users - Criando usuário");
 
-  const user = new User({ username: req.body.username });
+  const { username } = req.body;
+  
+  if (!username) {
+    return res.status(400).json({ error: "Username is required" });
+  }
+
+  const user = new User({ username });
   
   await user.save()
     .then(savedUser => {
@@ -112,7 +119,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     });
 });
 
-// Rota 4: Obter log de exercícios
+// Rota 4: Obter log de exercícios com filtros
 app.get("/api/users/:_id/logs", async (req, res) => {
   console.log(`GET /api/users/${req.params._id}/logs - Obtendo logs`);
 
