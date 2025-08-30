@@ -112,12 +112,12 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     });
 });
 
-// **Rota 4: Obter log de exercícios**
+// Rota 4: Obter log de exercícios
 app.get("/api/users/:_id/logs", async (req, res) => {
   console.log(`GET /api/users/${req.params._id}/logs - Obtendo logs`);
 
   const { from, to, limit } = req.query;
-  
+
   // Verificar se o usuário existe
   const user = await User.findById(req.params._id);
   if (!user) {
@@ -144,9 +144,9 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   // Preparar os exercícios no formato correto
   const log = exercises.map(e => ({
-    description: e.description,
-    duration: e.duration,
-    date: e.date.toDateString() // Garantir que a data esteja no formato string (Date.toDateString)
+    description: e.description,         // Garantir que a descrição seja uma string
+    duration: e.duration,               // Garantir que a duração seja um número
+    date: e.date.toDateString()         // Garantir que a data seja uma string no formato correto
   }));
 
   console.log(`Logs de exercícios encontrados: ${exercises.length}`);
@@ -156,7 +156,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     _id: user._id,
     username: user.username,
     count: exercises.length, // Número de exercícios
-    log: log
+    log: log // Lista dos exercícios no formato correto
   });
 });
 
