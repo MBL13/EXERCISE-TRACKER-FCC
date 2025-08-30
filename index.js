@@ -84,7 +84,10 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     return res.json({ error: "User not found" });
   }
 
-  const exerciseDate = date ? new Date(date) : new Date();
+  // Se a data não for fornecida, usa a data atual
+  const exerciseDate = date ? new Date(date) : new Date(); 
+
+  // Criar o exercício com os dados fornecidos
   const exercise = new Exercise({
     userId: user._id,
     description,
@@ -98,7 +101,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       res.json({
         _id: user._id,
         username: user.username,
-        date: savedExercise.date.toDateString(),
+        date: savedExercise.date.toDateString(), // Data formatada como string
         duration: savedExercise.duration,
         description: savedExercise.description
       });
@@ -115,38 +118,47 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   const { from, to, limit } = req.query;
   
+  // Verificar se o usuário existe
   const user = await User.findById(req.params._id);
   if (!user) {
     console.log(`Usuário com ID: ${req.params._id} não encontrado.`);
     return res.json({ error: "User not found" });
   }
 
+  // Filtro de datas, se "from" ou "to" forem passados
   let filter = { userId: user._id };
   if (from || to) {
     filter.date = {};
-    if (from) filter.date.$gte = new Date(from);
-    if (to) filter.date.$lte = new Date(to);
+    if (from) filter.date.$gte = new Date(from);  // "from" como data mínima
+    if (to) filter.date.$lte = new Date(to);      // "to" como data máxima
   }
 
+  // Query para pegar os exercícios
   let query = Exercise.find(filter).select("description duration date -_id");
+
+  // Limitar o número de resultados, se "limit" for passado
   if (limit) query = query.limit(parseInt(limit));
 
+  // Executar a consulta
   const exercises = await query.exec();
 
+  // Preparar os exercícios no formato correto
+  const log = exercises.map(e => ({
+    description: e.description,
+    duration: e.duration,
+    date: e.date.toDateString() // Garantir que a data esteja no formato string (Date.toDateString)
+  }));
+
   console.log(`Logs de exercícios encontrados: ${exercises.length}`);
-  
+
+  // Resposta final
   res.json({
     _id: user._id,
     username: user.username,
-    count: exercises.length,
-    log: exercises.map(e => ({
-      description: e.description,
-      duration: e.duration,
-      date: e.date.toDateString()
-    }))
+    count: exercises.length, // Número de exercícios
+    log: log
   });
 });
-
 
 /**/
 
